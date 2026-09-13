@@ -1,0 +1,9 @@
+{
+  "name": "atara-men-qr-backend",
+  "version": "1.0.0",
+  "description": "Serverless API for on-site Razorpay UPI QR code generation and status checking",
+  "main": "api/create-qr.js",
+  "dependencies": {
+    "razorpay": "^2.9.4"
+  }
+}

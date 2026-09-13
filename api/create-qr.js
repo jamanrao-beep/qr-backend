@@ -1,7 +1,6 @@
 const Razorpay = require('razorpay');
 
 module.exports = async (req, res) => {
-  // Enable CORS so your Shopify storefront can call this endpoint
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -43,7 +42,7 @@ module.exports = async (req, res) => {
     // Convert INR to Paise (e.g., ₹1299 -> 129900 paise)
     const amountInPaise = Math.round(Number(amount) * 100);
 
-    // 1. Create Order
+    // Create Razorpay Order
     const orderOptions = {
       amount: amountInPaise,
       currency: 'INR',
@@ -53,36 +52,18 @@ module.exports = async (req, res) => {
 
     const order = await instance.orders.create(orderOptions);
 
-    // 2. Generate UPI QR Code tied to this exact order
-    const qrOptions = {
-      type: 'upi_qr',
-      name: 'Atara Men',
-      usage: 'single_use',
-      fixed_amount: true,
-      payment_amount: amountInPaise,
-      description: `Payment for Order #${order.id}`,
-      customer_id: notes && notes.customer_id ? notes.customer_id : undefined,
-      notes: {
-        order_id: order.id,
-        ...(notes || {})
-      }
-    };
-
-    // Call Razorpay QR Code API
-    const qrCode = await instance.qrCode.create(qrOptions);
-
     return res.status(200).json({
       success: true,
       order_id: order.id,
-      qr_id: qrCode.id,
-      image_url: qrCode.image_url,
       amount: amount,
-      currency: 'INR'
+      amount_paise: amountInPaise,
+      currency: 'INR',
+      key_id: key_id
     });
   } catch (error) {
-    console.error('Error creating Razorpay QR code:', error);
+    console.error('Error creating Razorpay Order:', error);
     return res.status(500).json({
-      error: error.message || 'Failed to create QR code',
+      error: error.message || 'Failed to create order',
       details: error.error || error
     });
   }
